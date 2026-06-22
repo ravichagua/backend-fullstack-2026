@@ -13,9 +13,9 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     boolean existsByUsuarioId(Long usuarioId);
 
     @Query(value = """
-            SELECT MONTHNAME(fecha) as mes, COUNT(*) as total
+            SELECT MONTHNAME(fecha) as mes, SUM(total) as total
             FROM pedido
-            WHERE fecha >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+            WHERE fecha >= DATE_SUB(CURDATE(), INTERVAL 10 MONTH)
             GROUP BY MONTH(fecha), MONTHNAME(fecha)
             ORDER BY MONTH(fecha)
             """, nativeQuery = true)
