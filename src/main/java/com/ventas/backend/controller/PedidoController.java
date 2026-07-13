@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ventas.backend.model.*;
 import com.ventas.backend.repository.*;
 import com.ventas.backend.security.JwtUtil;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,6 +31,8 @@ public class PedidoController {
     private DespachoRepository despachoRepo;
     @Autowired
     private UsuarioRepository usuarioRepo;
+    @Autowired
+    private MeterRegistry registry;
     private final ObjectMapper mapper = new ObjectMapper();
 
     @GetMapping
@@ -119,6 +122,7 @@ public class PedidoController {
             despachoRepo.save(despacho);
         }
 
+        registry.counter("pedidos.creados").increment();
         return ResponseEntity.ok(saved);
     }
 

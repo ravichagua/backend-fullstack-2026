@@ -4,6 +4,9 @@ import com.ventas.backend.model.Despacho;
 import com.ventas.backend.model.Pedido;
 import com.ventas.backend.repository.DespachoRepository;
 import com.ventas.backend.repository.PedidoRepository;
+import io.micrometer.core.instrument.MeterRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -21,12 +24,16 @@ import java.util.Map;
 @RequestMapping("/api/despachos")
 public class DespachoController {
 
+    private static final Logger log = LoggerFactory.getLogger(DespachoController.class);
+
     @Autowired
     private DespachoRepository despachoRepo;
     @Autowired
     private PedidoRepository pedidoRepo;
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+    @Autowired
+    private MeterRegistry registry;
 
     @Value("${upload.dir}")
     private String uploadDir;
@@ -65,10 +72,12 @@ public class DespachoController {
                 p.setEstado(Pedido.Estado.COMPLETADO);
                 p.setFechaCierre(LocalDate.now());
                 pedidoRepo.save(p);
+                registry.counter("despachos.completados").increment();
             }
 
             Despacho saved = despachoRepo.save(d);
 
+            log.info("WS -> /topic/despachos enviado, despachoId={}", saved.getId());
             messagingTemplate.convertAndSend("/topic/despachos", Map.of(
                     "id", saved.getId(),
                     "idPedido", saved.getPedido().getId(),
