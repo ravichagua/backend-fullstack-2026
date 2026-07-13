@@ -34,7 +34,8 @@ public class JwtFilter extends OncePerRequestFilter {
             if (jwtUtil.isValid(token)) {
                 String correo = jwtUtil.extractCorreo(token);
                 String rol = jwtUtil.extractRol(token);
-                log.info("JWT validado OK: usuario={} rol={} recurso={}", correo, rol, request.getRequestURI());
+                log.info("JWT validado OK: usuario={} rol={} recurso={} tokenParcial={}",
+                        correo, rol, request.getRequestURI(), JwtLogUtil.enmascarar(token));
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                         correo, null,
                         List.of(new SimpleGrantedAuthority("ROLE_" + rol)));
